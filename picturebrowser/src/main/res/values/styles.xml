@@ -1,0 +1,31 @@
+<resources>
+	<style name="picture_browser_dialog" parent="@android:style/Theme.Dialog">
+
+
+		<item name="android:windowFrame">@null</item>
+		<!--是否需要标题-->
+		<item name="android:windowNoTitle">true</item>
+		<!--对话框的背景-->
+		<!--<item name="android:windowBackground">@drawable/shape_picture_browser_dialog</item>-->
+		<item name="android:windowBackground">@android:color/transparent</item>
+		<!--对话框是否悬浮-->
+		<item name="android:windowIsFloating">false</item>
+		<!--默认Window的content背景-->
+		<item name="android:windowContentOverlay">@null</item>
+		<!--dialog遮罩透明度-->
+		<item name="android:backgroundDimAmount">0.8</item>
+		<!--是否需要dialog遮罩-->
+		<item name="android:backgroundDimEnabled">true</item>
+		<item name="android:windowAnimationStyle">@style/picture_browser_dialog_anim</item>
+
+	</style>
+
+
+	<style name="picture_browser_dialog_anim"  parent="android:Animation">
+		<item name="android:windowEnterAnimation">@anim/picture_browser_dialog_in</item>
+		<item name="android:windowExitAnimation">@anim/picture_browser_dialog_out</item>
+	</style>
+
+
+
+</resources>
