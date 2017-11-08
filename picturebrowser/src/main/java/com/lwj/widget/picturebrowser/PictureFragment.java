@@ -13,20 +13,20 @@ import android.widget.FrameLayout;
 import com.bm.library.PhotoView;
 
 
-
 /**
+ * Created by lwj on 2017/11/6.
  * A simple {@link Fragment} subclass.
+ * PictureBrowser下ViewPager单页Fragment
  */
 public class PictureFragment extends Fragment implements View.OnClickListener {
 
 
-    private static String PICTUREURL = "pictureUrl";
+    private static String PICTURE_URL = "10200";
     private String mPictureUrl;
     private PhotoView mIvPicture;
-    private FrameLayout mFlPicture;
-    private View mSpaceOutside;
     private OnClickOutsideListener mOnClickOutsideListener;
     private static PictureLoader mPictureLoader;
+    private View mLayout;
 
     public PictureFragment() {
     }
@@ -34,7 +34,7 @@ public class PictureFragment extends Fragment implements View.OnClickListener {
     public static PictureFragment newInstance(String pictureUrl) {
 
         Bundle args = new Bundle();
-        args.putString(PICTUREURL, pictureUrl);
+        args.putString(PICTURE_URL, pictureUrl);
         PictureFragment fragment = new PictureFragment();
         fragment.setArguments(args);
         return fragment;
@@ -44,25 +44,31 @@ public class PictureFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Bundle bundle = getArguments();
-        if (bundle != null) {
-            mPictureUrl = bundle.getString(PICTUREURL);
+        if (mLayout == null) {//第一次加载
+            Bundle bundle = getArguments();
+            if (bundle != null) {
+                mPictureUrl = bundle.getString(PICTURE_URL);
+            }
+
+            mLayout = inflater.inflate(R.layout.fragment_picture, container, false);
+
+            mIvPicture = (PhotoView) mLayout.findViewById(R.id.iv_picture);
+            // 启用图片缩放功能
+            mIvPicture.enable();
+            mIvPicture.setOnClickListener(this);
+            if (getParentFragment() instanceof OnClickOutsideListener) {
+                setOnClickOutsideListener((OnClickOutsideListener) getParentFragment());
+            }
+            //展示图片
+            showPicture(this, mIvPicture, mPictureUrl);
+        } else {//已经加载过
+            ViewGroup parent = (ViewGroup) mLayout.getParent();
+            if (parent != null) {
+                parent.removeView(mLayout);
+            }
         }
 
-        View view = inflater.inflate(R.layout.fragment_picture, container, false);
-
-        mIvPicture = (PhotoView) view.findViewById(R.id.iv_picture);
-        // 启用图片缩放功能
-        mIvPicture.enable();
-        mIvPicture.setOnClickListener(this);
-        if (getParentFragment() instanceof OnClickOutsideListener) {
-            setOnClickOutsideListener((OnClickOutsideListener) getParentFragment());
-        }
-
-        //展示图片
-        showPicture(this,mIvPicture,mPictureUrl);
-
-        return view;
+        return mLayout;
 
     }
 
@@ -70,44 +76,51 @@ public class PictureFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
-
     }
 
     /**
-     * 可以覆写该方法
-     * @param pictureFragment
-     * @param ivPicture
+     * 显示图片
+     *
+     * @param fragment
+     * @param pictureView
      * @param pictureUrl
      */
-    public void showPicture(PictureFragment pictureFragment, PhotoView ivPicture, String pictureUrl)
-    {
-//        Glide.with(this)
-//                .load(pictureUrl)
-//                .placeholder(new ColorDrawable(Color.LTGRAY))
-//                .into(mIvPicture);
-        if(this.mPictureLoader!=null){
-            this.mPictureLoader.showPicture(pictureFragment, ivPicture,pictureUrl);
+    public void showPicture(PictureFragment fragment, PhotoView pictureView, String pictureUrl) {
+        if (mPictureLoader != null) {
+            mPictureLoader.showPicture(fragment, pictureView, pictureUrl);
         }
     }
 
-    public static void setPictureLoader(PictureLoader pictureLoader)
-    {
-        if(mPictureLoader==null&&pictureLoader!=null)
-        {
-            mPictureLoader=pictureLoader;
+    /**
+     * 初始化图片加载器(只设置一次)
+     *
+     * @param loader
+     */
+    public static void initPictureLoader(PictureLoader loader) {
+        if (mPictureLoader == null && loader != null) {
+            mPictureLoader = loader;
         }
+    }
 
+    /**
+     * 设置图片加载器
+     *
+     * @param loader
+     */
+    public static void setPictureLoader(PictureLoader loader) {
+        mPictureLoader = loader;
     }
-    public static PictureLoader getPictureLoader()
-    {
-        return mPictureLoader;
-    }
+
+
     public interface OnClickOutsideListener {
-
         void onClickOutside();
     }
 
-
+    /**
+     * 点击图片外围事件由PictureBrowser处理(默认点击退出)
+     *
+     * @param listener
+     */
     public void setOnClickOutsideListener(OnClickOutsideListener listener) {
 
         mOnClickOutsideListener = listener;
@@ -123,4 +136,7 @@ public class PictureFragment extends Fragment implements View.OnClickListener {
 
         }
     }
+
+
 }
+

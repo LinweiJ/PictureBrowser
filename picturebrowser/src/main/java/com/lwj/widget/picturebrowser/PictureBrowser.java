@@ -19,21 +19,29 @@ import java.util.ArrayList;
 
 /**
  * Created by lwj on 2017/11/6.
+ * 图片浏览器
+ * 基于DialogFragment
+ * 支持横竖屏切换
  */
 
 public class PictureBrowser extends DialogFragment implements PictureFragment.OnClickOutsideListener, View.OnClickListener, ViewPager.OnPageChangeListener {
 
-    private static String PICTUREURLLIST = "10000";
-    private static String STARTINDEX = "10001";
+    private static String PICTURE_URL_LIST = "10000";
+    private static String START_INDEX = "10001";
+    private static String SHOW_DELETE_ICON = "10002";
+    private static String SHOW_INDEX_HINT = "10003";
+    private static String CANCEL_OUTSIDE = "10004";
     private static String TAG = "PictureBrowser";
-    //    private RecyclerView mRvPicture;
     private ViewPager mVpPicture;
     private TextView mTvNum;
     private ImageView mIvDelete;
+    private boolean mShowDeleteIcon;
+    private boolean mShowIndexHint;
+    private boolean mCancelOutside;
     private ArrayList<String> mUrlList = new ArrayList<>();
     private int mStartIndex;
     private View mLayout;
-    private PicturePagerAdapter<String> mAdapter;
+    private PicturePagerAdapter mAdapter;
     private FragmentManager mFragmentManager;
 
     public PictureBrowser() {
@@ -41,15 +49,23 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
 
     }
 
+
+
     public static PictureBrowser newInstance(ArrayList<String> pictureUrlList) {
-        return newInstance(pictureUrlList, 0);
+        return newInstance(pictureUrlList, 0,true,true,true);
     }
 
-    public static PictureBrowser newInstance(ArrayList<String> pictureUrlList, int startIndex) {
+    public static PictureBrowser newInstance(ArrayList<String> pictureUrlList, int startIndex,boolean showDeleteIcon
+            ,boolean showIndexHint,boolean cancelOutside
+
+    ) {
 
         Bundle args = new Bundle();
-        args.putStringArrayList(PICTUREURLLIST, pictureUrlList);
-        args.putInt(STARTINDEX, startIndex);
+        args.putStringArrayList(PICTURE_URL_LIST, pictureUrlList);
+        args.putInt(START_INDEX, startIndex);
+        args.putBoolean(SHOW_DELETE_ICON, showDeleteIcon);
+        args.putBoolean(SHOW_INDEX_HINT, showIndexHint);
+        args.putBoolean(CANCEL_OUTSIDE, cancelOutside);
         PictureBrowser fragment = new PictureBrowser();
         fragment.setArguments(args);
         return fragment;
@@ -63,6 +79,9 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
         private int mStartIndex;
         private ArrayList<String> mUrlList;
         private FragmentManager mManager;
+        private boolean mShowDeleteIcon=true;
+        private boolean mShowIndexHint=true;
+        private boolean mCancelOutside=true;
 
         public Builder() {
 
@@ -71,7 +90,7 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
         public Builder setStartIndex(int startIndex) {
 
             if (startIndex >= 0) {
-                mStartIndex = startIndex;
+                this.mStartIndex = startIndex;
             }
 
             return this;
@@ -79,7 +98,7 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
 
         public Builder setUrlList(ArrayList<String> urlList) {
 
-            mUrlList = urlList == null ? new ArrayList<String>() : urlList;
+            this.mUrlList = urlList == null ? new ArrayList<String>() : urlList;
 
             return this;
         }
@@ -88,28 +107,51 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
 
             if (manager != null) {
 
-                mManager = manager;
+                this.mManager = manager;
 
             }
 
             return this;
         }
 
-        public  Builder setPictureLoader(PictureLoader pictureLoader)
+        public Builder initPictureLoader(PictureLoader  loader)
         {
 
-            PictureFragment.setPictureLoader(pictureLoader);
+            PictureFragment.initPictureLoader(loader);
+
+            return this;
+        }
+
+        public Builder setPictureLoader(PictureLoader  loader)
+        {
+
+            PictureFragment.setPictureLoader(loader);
+
+            return this;
+        }
+
+        public Builder setShowDeleteIcon(boolean showDeleteIcon) {
+            this.mShowDeleteIcon = showDeleteIcon;
+            return this;
+        }
+
+        public Builder setShowIndexHint(boolean showIndexHint) {
+            this.mShowIndexHint = showIndexHint;
+            return this;
+        }
+
+        public Builder setCancelOutside(boolean cancelOutside) {
+            this.mCancelOutside = cancelOutside;
             return this;
         }
 
         public PictureBrowser create() {
 
-            //用于切屏保存参数
-            PictureBrowser fragment = PictureBrowser.newInstance(mUrlList, mStartIndex);
+            //用于系统销毁(如:横竖屏切换)保存参数
+            PictureBrowser fragment = PictureBrowser.newInstance(this.mUrlList, this.mStartIndex, this.mShowDeleteIcon,this.mShowIndexHint,this.mCancelOutside );
             //开启时使用的两个判断参数
-            fragment.setFragmentManager(mManager);
-            fragment.setUrlList(mUrlList);
-
+            fragment.setFragmentManager(this.mManager);
+            fragment.setUrlList(this.mUrlList);
             return fragment;
         }
 
@@ -117,14 +159,12 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
     }
 
 
+
     public void setFragmentManager(FragmentManager manager) {
 
         if (manager != null) {
-
-            mFragmentManager = manager;
-
+            this.mFragmentManager = manager;
         }
-
 
     }
 
@@ -138,42 +178,79 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-
-        Log.e("mLayout", "" + (mLayout == null));
-
-
         Bundle bundle = getArguments();
         if (bundle != null) {
-            ArrayList<String> urlList = bundle.getStringArrayList(PICTUREURLLIST);
+            ArrayList<String> urlList = bundle.getStringArrayList(PICTURE_URL_LIST);
 
             if (urlList != null) {
-                mUrlList.clear();
-                mUrlList.addAll(urlList);
+                this.mUrlList.clear();
+                this.mUrlList.addAll(urlList);
             }
-            mStartIndex = bundle.getInt(STARTINDEX);
+            this.mStartIndex = bundle.getInt(START_INDEX);
+            this.mShowDeleteIcon = bundle.getBoolean(SHOW_DELETE_ICON,true);
+            this.mShowIndexHint = bundle.getBoolean(SHOW_INDEX_HINT,true);
+            this.mCancelOutside = bundle.getBoolean(CANCEL_OUTSIDE,true);
         }
 
-        mLayout = inflater.inflate(R.layout.layout_picture_browser_dialog, container, false);
+        this.mLayout = inflater.inflate(R.layout.layout_picture_browser_dialog, container, false);
+        this.mVpPicture = (ViewPager) this.mLayout.findViewById(R.id.vp_picture);
+        this.mTvNum = (TextView) this.mLayout.findViewById(R.id.tv_num);
+        this.mIvDelete = (ImageView) this.mLayout.findViewById(R.id.iv_delete);
+        this.mIvDelete.setOnClickListener(this);
+        this.mVpPicture.addOnPageChangeListener(this);
+        //显示
+        setShowIndexHint(this.mShowIndexHint);
+        setShowDeleteIcon(this.mShowDeleteIcon);
 
-        mVpPicture = (ViewPager) mLayout.findViewById(R.id.vp_picture);
-        mTvNum = (TextView) mLayout.findViewById(R.id.tv_num);
-        mIvDelete = (ImageView) mLayout.findViewById(R.id.iv_delete);
-        mIvDelete.setOnClickListener(this);
-
-
-        mVpPicture.addOnPageChangeListener(this);
-
-        mVpPicture.removeAllViews();
         FragmentManager manager = getChildFragmentManager();
-        mAdapter = new PicturePagerAdapter<>(manager, mUrlList);
-        mVpPicture.setAdapter(mAdapter);
+        this.mAdapter = new PicturePagerAdapter(manager, this.mUrlList);
+        this.mVpPicture.setAdapter(this.mAdapter);
 
-
-        setCurrentItem(mStartIndex);
-        setCurrentItemNum(mStartIndex);
+        //设置开始页
+        setCurrentItem(this.mStartIndex);
+        setCurrentItemHint(this.mStartIndex);
 
         return mLayout;
 
+    }
+
+    /**
+     * 显示删除图标
+     * @param showDeleteIcon
+     */
+    public void setShowDeleteIcon(boolean showDeleteIcon){
+
+        this.mShowDeleteIcon=showDeleteIcon;
+        if(this.mShowDeleteIcon){
+            mIvDelete.setVisibility(View.VISIBLE);
+        }else
+        {
+            mIvDelete.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * 显示Index文字
+     * @param showIndexHint
+     */
+    public void setShowIndexHint(boolean showIndexHint){
+
+        this.mShowIndexHint=showIndexHint;
+        if(this.mShowIndexHint){
+            mTvNum.setVisibility(View.VISIBLE);
+        }else
+        {
+            mTvNum.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * 是否点击图片退出
+     * @param cancelOutside
+     */
+    public void setCancelOutside(boolean cancelOutside){
+
+        this.mCancelOutside=cancelOutside;
     }
 
 
@@ -202,19 +279,10 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
         return this;
     }
 
-    public DialogFragment show(FragmentManager manager) {
-        if (mUrlList.size() > 0) {
-            this.show(manager, TAG);
-        }
-        return this;
-    }
-
     @Override
     public void show(FragmentManager manager, String tag) {
 
-
         super.show(manager, tag);
-
 
     }
 
@@ -239,18 +307,15 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
     private void setCurrentItem(int item) {
 
         if (mVpPicture != null) {
-            Log.e("mStartIndex", "" + item);
             mVpPicture.setCurrentItem(item);
         }
     }
 
-    private void setCurrentItemNum(int position) {
+    private void setCurrentItemHint(int position) {
 
         if (position < mUrlList.size()) {
             mTvNum.setText((position + 1) + "/" + mUrlList.size());
         }
-
-
     }
 
     @Override
@@ -260,7 +325,7 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
 
     @Override
     public void onPageSelected(int position) {
-        setCurrentItemNum(position);
+        setCurrentItemHint(position);
     }
 
     /**
@@ -270,6 +335,7 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
      */
     @Override
     public void onPageScrollStateChanged(int i) {
+
 
     }
 
@@ -281,8 +347,6 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
             this.dismiss();
 
         }
-
-
     }
 
     /**
@@ -290,16 +354,14 @@ public class PictureBrowser extends DialogFragment implements PictureFragment.On
      */
     @Override
     public void onClickOutside() {
-
-        this.dismiss();
-
-
+        if(this.mCancelOutside)
+        {
+            this.dismiss();
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-
-
     }
 }

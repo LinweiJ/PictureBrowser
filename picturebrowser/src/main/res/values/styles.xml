@@ -20,12 +20,9 @@
 
 	</style>
 
-
 	<style name="picture_browser_dialog_anim"  parent="android:Animation">
 		<item name="android:windowEnterAnimation">@anim/picture_browser_dialog_in</item>
 		<item name="android:windowExitAnimation">@anim/picture_browser_dialog_out</item>
 	</style>
-
-
 
 </resources>

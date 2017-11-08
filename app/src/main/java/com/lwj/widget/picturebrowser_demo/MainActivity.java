@@ -42,10 +42,8 @@ public class MainActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
 
-//        MyRecyclerAdapter adapter = new MyRecyclerAdapter(mUrlList);
+
         final MyRecyclerAdapter2 adapter = new MyRecyclerAdapter2(mUrlList);
-//        MyAdapter  adapter = new MyAdapter(mUrlList);
-//        StaggeredGridLayoutManager manager = new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL);
         GridLayoutManager manager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(manager);
 
@@ -68,17 +66,14 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.e("onItemClick","onItemClick"+position+data.size());
 
-//                PictureBrowser pictureBrowser = PictureBrowser.newInstance(data,position);
-//                PictureBrowser pictureBrowser = PictureBrowser.newInstance(null,position);
-//                pictureBrowser.show(getSupportFragmentManager());
-
-
-
                 PictureBrowser.Builder builder = new PictureBrowser.Builder();
                 builder.setFragmentManager(getSupportFragmentManager())
                         .setUrlList(data)
                         .setStartIndex(position)
-                        .setPictureLoader(pictureLoader)
+                        .initPictureLoader(pictureLoader)
+                        .setShowDeleteIcon(true)
+                        .setShowIndexHint(true)
+                        .setCancelOutside(true)
                         .create()
                         .show();
 
