@@ -52,12 +52,12 @@ dependencies {
 ```java
 PictureLoader pictureLoader = new PictureLoader() {
             @Override
-            public void showPicture(Fragment fragment, PhotoView pictureView, String pictureUrl) {
+            public void showPicture(PictureFragment fragment, PhotoView photoView, String pictureUrl) {
                 //使用Glide加载图片,可自行根据需求选用其他图片加载库   
                 Glide.with(fragment)
                         .load(pictureUrl)
                         .placeholder(new ColorDrawable(Color.LTGRAY))
-                        .into(pictureView);
+                        .into(photoView);
             }
         };
 
