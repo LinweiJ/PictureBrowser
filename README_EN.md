@@ -56,7 +56,7 @@ dependencies {
 ```java
 PictureLoader pictureLoader = new PictureLoader() {
             @Override
-            public void showPicture(Fragment fragment, PhotoView pictureView, String pictureUrl) {
+            public void showPicture(PictureFragment fragment, PhotoView pictureView, String pictureUrl) {
                 //yon can use other image loading library    
                 Glide.with(fragment)
                         .load(pictureUrl)
